@@ -75,7 +75,7 @@ public static class Vibration
 #elif UNITY_IOS && !UNITY_EDITOR
         Handheld.Vibrate();
 #else
-		Handheld.Vibrate();
+		//Handheld.Vibrate();
 #endif
 	}
 
@@ -90,7 +90,7 @@ public static class Vibration
 #elif UNITY_IOS && !UNITY_EDITOR
         Handheld.Vibrate();
 #else
-		Handheld.Vibrate();
+		//Handheld.Vibrate();
 #endif
 	}
 
@@ -127,6 +127,6 @@ public static class Vibration
 
 	public static void Vibrate()
 	{
-		Handheld.Vibrate();
+		//Handheld.Vibrate();
 	}
 }
