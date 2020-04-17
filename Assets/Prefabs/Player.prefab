@@ -314,7 +314,7 @@ Transform:
   m_GameObject: {fileID: 115391750357430951}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.6906696, y: 6.11, z: -8.8}
-  m_LocalScale: {x: 1.3, y: 1.3, z: 1.3}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_Children:
   - {fileID: 3546153725671259062}
   - {fileID: 3546153724505425154}
@@ -337,12 +337,7 @@ Animator:
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
-  m_WarningMessage: "\nBinding warning: Some generic clip(s) animate transforms that
-    are already bound by a Humanoid avatar. These transforms can only be changed
-    by Humanoid clips.\n\tTransform 'RigPelvis'\n\tTransform 'RigSpine2'\n\tTransform
-    'RigLLeg2'\n\tTransform 'RigRLeg1'\n\tTransform 'RigSpine3'\n\tTransform 'RigSpine1'\n\tTransform
-    'RigPelvis'\n\tTransform 'RigRibcage'\n\tTransform 'RigNeck2'\n\tTransform 'RigNeck1'\n\tand
-    more ...\n\tFrom animation clip 'Chicken Dance'"
+  m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
@@ -387,8 +382,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b22774dfa44bee64bb8a355fe4b9e65b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  defaultAvatar: {fileID: 9000000, guid: ab49f3cef633f1d4c84f8c46ec6c0b74, type: 3}
-  mixamoAvatar: {fileID: 9000000, guid: e04d2a51c754d1549be8f212d38f09ed, type: 3}
   speed: 12
   dustPS: {fileID: 3546153725671259060}
   joyStick: {fileID: 0}

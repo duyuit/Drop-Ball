@@ -29,4 +29,8 @@ public class SceneController : MonoBehaviour
         SceneManager.LoadScene(scene.name);
     }
 
+    public void LoadOnlineScene()
+    {
+        SceneManager.LoadScene("Online");
+    }
 }

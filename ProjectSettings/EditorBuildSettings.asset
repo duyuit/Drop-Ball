@@ -4,5 +4,14 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Looby.unity
+    guid: 60c9ec15bf5206a4daf1837c3360181d
+  - enabled: 1
+    path: Assets/Scenes/WWE.unity
+    guid: 376d67348faae9144afff6a71b33ec6b
+  - enabled: 1
+    path: Assets/Scenes/Online.unity
+    guid: 77f4d78d442738344b508be37d28ef40
   m_configObjects: {}

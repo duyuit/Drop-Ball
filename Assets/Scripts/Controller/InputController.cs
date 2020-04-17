@@ -34,8 +34,19 @@ public class InputController : MonoBehaviour
 
     void HandleInput()
     {
-        if (GameController.Instance.isWaiting)
-            return;
+        //if (GameController.Instance.isWaiting)
+        //    return;
+
+        if (GlobalVariable.isOnline)
+        {
+            if (GameOnlineController.Instance.isWaiting)
+                return;
+        }
+        else
+        {
+            if (GameController.Instance.isWaiting)
+                return;
+        }
 
         if (Input.GetMouseButtonDown(0))
             _isTap = true;

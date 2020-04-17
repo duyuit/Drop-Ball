@@ -19,6 +19,7 @@ public class GameController : MonoBehaviour
 
     public Text botRemainText;
     public Text cleanTimeText;
+
     public Player.Player player;
     public Ball ball;
 

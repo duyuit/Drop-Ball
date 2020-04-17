@@ -20,12 +20,22 @@ namespace Player
 
             _originPos = transform.position;
             _ballCatcher = GetComponentInChildren<BallCatcher>();
+
+            joyStick = FindObjectOfType<Joystick>();
         }
 
         protected virtual void FixedUpdate()
         {
-            if (!GameController.Instance.isWaiting)
-                HandleInput();
+            if (GlobalVariable.isOnline)
+            {
+                if (!GameOnlineController.Instance.isWaiting)
+                    HandleInput();
+            }
+            else
+            {
+                if (!GameController.Instance.isWaiting)
+                    HandleInput();
+            }
         }
 
         public void Reset()
@@ -49,6 +59,8 @@ namespace Player
         void HandleInput()
         {
             var value = joyStick.Direction;
+            if (GlobalVariable.myIndex != 1)
+                value *= -1f;
 
             if (Input.GetMouseButton(0))
             {
@@ -59,6 +71,7 @@ namespace Player
                 dustPS.transform.rotation = Quaternion.LookRotation(movement);
                 _animator.SetTrigger("Run");
 
+
                 //if (!grassPS.isPlaying)
                 //    grassPS.Play();
             }
@@ -67,6 +80,8 @@ namespace Player
                 _animator.SetTrigger("Idle");
                 //grassPS.Stop();
             }
+
+            NetworkController.Instance.SendUpdatePosition(value);
         }
     }
 }

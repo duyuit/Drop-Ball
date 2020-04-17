@@ -6,6 +6,8 @@ public class PrefabController : MonoBehaviour
 {
     public GameObject starPrefab;
     public GameObject myBlock;
+    public GameObject playerPrefab;
+    public GameObject opponentPrefab;
 
     public static PrefabController Instance = null;
     private void Awake()
