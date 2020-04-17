@@ -221,17 +221,17 @@ public class MyBlock : MonoBehaviour
 
     public void ExecuteClip(IClip awakeCircleClipper)
     {
-        BlockSimplification.epsilon = (int64)(3.13f / 100f * 1 * VectorEx.float2int64);
+        //BlockSimplification.epsilon = (int64)(3.13f / 100f * 1 * VectorEx.float2int64);
 
-        List<List<Vector2i>> solutions = new List<List<Vector2i>>();
+        //List<List<Vector2i>> solutions = new List<List<Vector2i>>();
 
-        ClipperLib.Clipper clipper = new ClipperLib.Clipper();
-        clipper.AddPolygons(polygons, ClipperLib.PolyType.ptSubject);
-        clipper.AddPolygon(awakeCircleClipper.GetVertices(), ClipperLib.PolyType.ptClip);
-        clipper.Execute(ClipperLib.ClipType.ctDifference, solutions,
-            ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero);
+        //ClipperLib.Clipper clipper = new ClipperLib.Clipper();
+        //clipper.AddPolygons(polygons, ClipperLib.PolyType.ptSubject);
+        //clipper.AddPolygon(awakeCircleClipper.GetVertices(), ClipperLib.PolyType.ptClip);
+        //clipper.Execute(ClipperLib.ClipType.ctDifference, solutions,
+        //    ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero);
 
-        UpdateGeometryWithMoreVertices(solutions, 1, 1, depth);
+        //UpdateGeometryWithMoreVertices(solutions, 1, 1, depth);
     }
 
     private void UpdateColliders(List<List<Vector2>> edgesList)

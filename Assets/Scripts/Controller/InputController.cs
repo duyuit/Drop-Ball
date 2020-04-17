@@ -34,10 +34,8 @@ public class InputController : MonoBehaviour
 
     void HandleInput()
     {
-        //if (Input.GetMouseButton(0))
-        //    _isTap = true;
-        //else
-        //    _isTap = false;
+        if (GameController.Instance.isWaiting)
+            return;
 
         if (Input.GetMouseButtonDown(0))
             _isTap = true;

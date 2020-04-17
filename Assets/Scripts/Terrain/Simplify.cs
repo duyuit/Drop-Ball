@@ -8,7 +8,7 @@ using Vector2f = UnityEngine.Vector2;
 
 public static class BlockSimplification
 {
-    public static int64 epsilon;
+    public static int64 epsilon = (int64)(0.0f * VectorEx.float2int64);
 
     public static Vector2i currentLowerPoint;
 

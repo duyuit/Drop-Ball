@@ -25,6 +25,7 @@ public class Ball : MonoBehaviour
             _botCatcher.Add(catcherComp);
         }
 
+        playerCatcher.onFire += ballCutter.ResetHasCut;
         SetCatcher(playerCatcher);
     }
 
@@ -44,12 +45,12 @@ public class Ball : MonoBehaviour
         _holder = null;
     }
 
-    public void Reset(Winner winner)
+    public void Reset(PlayerTag winner)
     {
         transform.position = new Vector3(0, 10, 0);
-        ballBouncer.SetVelocity(new Vector3(UnityEngine.Random.Range(-3, 3), 0, UnityEngine.Random.Range(10f, 12f)));
+        //ballBouncer.SetVelocity(new Vector3(UnityEngine.Random.Range(-3, 3), 0, UnityEngine.Random.Range(10f, 12f)));
 
-        if (winner == Winner.BOT)
+        if (winner == PlayerTag.BOT)
         {
             SetCatcher(_botCatcher[UnityEngine.Random.Range(0,_botCatcher.Count)]);
         }
@@ -67,20 +68,22 @@ public class Ball : MonoBehaviour
         transform.position = newPos;
     }
 
-    public Winner GetWinner()
+    public PlayerTag GetWinner()
     {
         if (!ballCutter.hasCut)
         {
-            Debug.Log("Has cut");
-            if (_lastHolder.isBot)
+            Debug.Log("Has not cut");
+            if (_lastHolder != null && _lastHolder.isBot)
             {
-                return Winner.PLAYER;
+                Debug.Log("Last holder is bot");
+                return PlayerTag.PLAYER;
             }
             else
             {
-                return Winner.BOT;
+                Debug.Log("Last holder is player");
+                return PlayerTag.BOT;
             }
         }
-        return Winner.NONE;
+        return PlayerTag.NONE;
     }
 }

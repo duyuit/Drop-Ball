@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 using System;
 
-public enum Winner
+public enum PlayerTag
 {
     PLAYER,
     BOT,
@@ -15,13 +15,17 @@ public enum Winner
 public class GameController : MonoBehaviour
 {
     public static GameController Instance = null;
+
+
     public Text botRemainText;
     public Text cleanTimeText;
-    public Player player;
+    public Player.Player player;
     public Ball ball;
 
-    [HideInInspector]
-    public bool isStarted = false;
+    [HideInInspector] public bool isStarted = false;
+    [HideInInspector] public bool isWaiting = false;
+    [HideInInspector] public bool isWaitingNewRound = false;
+    [HideInInspector] public bool isEndGame = false;
 
     public GameObject losePanel;
     public GameObject winPanel;
@@ -34,7 +38,7 @@ public class GameController : MonoBehaviour
     private List<MyBlock> _recoverBlocks;
 
     private DelayFunctionHelper _delayHelper;
-    public Winner currentWinner;
+    public PlayerTag currentWinner;
 
 
     private List<string> _winText;
@@ -52,14 +56,15 @@ public class GameController : MonoBehaviour
             Destroy(Instance.gameObject);
             Instance = this;
         }
+
         _delayHelper = gameObject.AddComponent<DelayFunctionHelper>();
     }
 
-    private void ShowWinnerText(Winner winner)
+    private void ShowWinnerText(PlayerTag winner)
     {
-        if (winner == Winner.PLAYER)
+        if (winner == PlayerTag.PLAYER)
         {
-            ShowText(_winText[UnityEngine.Random.Range(0,_winText.Count)]);
+            ShowText(_winText[UnityEngine.Random.Range(0, _winText.Count)]);
         }
         else
         {
@@ -67,28 +72,58 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void SetWinner(Winner winner)
+    public void SetWinner(PlayerTag winner)
     {
         currentWinner = winner;
+        isStarted = false;
+        isWaiting = true;
         ScoreController.Instance.AddScore(currentWinner);
+
+        bool isBotWin = currentWinner == PlayerTag.BOT;
+        foreach (var bot in _listBot)
+        {
+            if (isBotWin)
+                bot.Win();
+            else
+                bot.Lose();
+        }
+
+        if (isBotWin)
+        {
+            player.Lose();
+            SoundController.Instance.PlayLoseSound();
+        }
+        else
+        {
+            player.Win();
+            SoundController.Instance.PlayWinSound();
+        }
+
         Reset();
     }
-    public void Reset()
+
+    public void Reset(bool showWinnerText = true)
     {
-        ShowWinnerText(currentWinner);
+        if (isWaitingNewRound || isEndGame)
+        {
+            return;
+        }
+
+        if (showWinnerText)
+            ShowWinnerText(currentWinner);
+
         _delayHelper.delayFunction(() =>
         {
             foreach (var bot in _listBot)
             {
                 bot.Reset();
             }
+
             player.Reset();
 
             ball.Reset(currentWinner);
-
-            isStarted = false;
-        }, 1f);
-
+            isWaiting = false;
+        }, 2f);
     }
 
     private void Start()
@@ -101,47 +136,50 @@ public class GameController : MonoBehaviour
 
         _winText = new List<string>();
         _loseText = new List<string>();
-
         _winText.Add("YEAH!!");
         _winText.Add("BOOYAH!!");
         _winText.Add("AHAHA!!");
         _winText.Add("HOORAYY!!");
-
         _loseText.Add("OOPS!");
         _loseText.Add("AGAIN!");
         _loseText.Add("****!");
         _loseText.Add("HM . . .");
+
+        isWaiting = true;
+        ShowText("Round " + 1, 2f);
+        _delayHelper.delayFunction(() =>
+        {
+            isWaiting = false;
+        }, 3f);
     }
 
-    public void ShowText(string text)
+    public void ShowText(string text, float time = 1f)
     {
         cleanTimeText.text = text;
         cleanTimeText.transform.DOScale(1, .5f).SetEase(Ease.OutBounce);
-        _delayHelper.delayFunction(() =>
-        {
-            cleanTimeText.transform.DOScale(0, .5f);
-        }, 1f);
+        _delayHelper.delayFunction(() => { cleanTimeText.transform.DOScale(0, .5f); }, time);
     }
 
-    public void SetLastBlock(MyBlock blockComp)
+    public void SetLastRange(PlayerTag tag)
     {
-        Vector2Int index = blockComp.index;
-        if (index.y < 15)
-            currentWinner = Winner.BOT;
+        if (tag == PlayerTag.BOT)
+            currentWinner = PlayerTag.PLAYER;
         else
-            currentWinner = Winner.PLAYER;
+            currentWinner = PlayerTag.BOT;
     }
 
     public void DropBall()
     {
-        Winner winner = ball.GetWinner();
+        PlayerTag winner = ball.GetWinner();
         // Ball out before touch
-        if (winner != Winner.NONE)
+        if (winner != PlayerTag.NONE)
         {
-            currentWinner = winner;
+            SetWinner(winner);
         }
-
-        ScoreController.Instance.AddScore(currentWinner);
+        else
+        {
+            SetWinner(currentWinner);
+        }
     }
 
     public void Lose()
@@ -151,18 +189,72 @@ public class GameController : MonoBehaviour
 
     public void Win()
     {
-        //player.Win();
-
-        _delayHelper.delayFunction(() =>
-        {
-            GrassController.Instance.GeneratePlan();
-        }, 1f);
-
         _delayHelper.delayFunction(() =>
         {
             winPanel.SetActive(true);
             winPS.SetActive(true);
-
         }, 2f);
+    }
+
+    public void WinTurn()
+    {
+        SetWinner(PlayerTag.PLAYER);
+    }
+
+    public void LoseTurn()
+    {
+        SetWinner(PlayerTag.BOT);
+    }
+
+    public void EndRound(PlayerTag playerTag, Action callBack)
+    {
+        isWaitingNewRound = true;
+        isWaiting = true;
+
+        if (playerTag == PlayerTag.PLAYER)
+        {
+            ShowText("You win", 2f);
+        }
+        else
+        {
+            ShowText("You lose", 2f);
+        }
+
+        _delayHelper.delayFunction(() =>
+        {
+            callBack?.Invoke();
+
+            if (isEndGame)
+                return;
+
+            isWaiting = false;
+            isWaitingNewRound = false;
+
+            _delayHelper.delayFunction(() =>
+            {
+                Reset(false);
+            }, 1f);
+        }, 3);
+    }
+
+    public void EndGame(PlayerTag winner)
+    {
+        Debug.Log("End game");
+
+        isWaiting = true;
+        isEndGame = true;
+        _delayHelper.delayFunction(() =>
+        {
+            if (winner == PlayerTag.PLAYER)
+            {
+                winPS.SetActive(true);
+                winPanel.SetActive(true);
+            }
+            else
+            {
+                losePanel.SetActive(true);
+            }
+        }, 3f);
+
     }
 }

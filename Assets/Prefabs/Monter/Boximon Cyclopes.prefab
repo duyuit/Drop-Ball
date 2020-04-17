@@ -48,7 +48,7 @@ Animator:
   m_GameObject: {fileID: 441637237069778784}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: ab49f3cef633f1d4c84f8c46ec6c0b74, type: 3}
-  m_Controller: {fileID: 9100000, guid: cad4cd74f41924a4bbcbe916d2f9cb9b, type: 2}
+  m_Controller: {fileID: 9100000, guid: 13a1ee325e4b6894d93dc2f6c348ec8d, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -98,6 +98,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1466eb0c8141d6a42bbf1e7b1ddeadcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  defaultAvatar: {fileID: 9000000, guid: ab49f3cef633f1d4c84f8c46ec6c0b74, type: 3}
+  mixamoAvatar: {fileID: 9000000, guid: e04d2a51c754d1549be8f212d38f09ed, type: 3}
   speed: 10
   dustPS: {fileID: 7280176328276839537}
   joyStick: {fileID: 0}
@@ -1511,8 +1513,8 @@ Light:
   m_Type: 2
   m_Shape: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
-  m_Range: 10
+  m_Intensity: 0.5
+  m_Range: 1
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize: 10

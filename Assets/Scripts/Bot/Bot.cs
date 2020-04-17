@@ -9,7 +9,7 @@ public enum BotState
     RUN,
     IDLE
 }
-public class Bot : Player
+public class Bot : Player.Player
 {
     public bool isSuperBot = false;
 
@@ -34,18 +34,13 @@ public class Bot : Player
         }
     }
 
-    public void Reset()
-    {
-        transform.position = _originPos;
-        //transform.position = new Vector3(Random.Range(-9f,9f),2f,Random.Range(1f,14f));
-    }
-
     protected override void FixedUpdate()
     {
         if(!GameController.Instance.isStarted)
         {
             return;
         }
+        
 
         if (isSuperBot &&
             _ball.transform.position.z > -2f &&

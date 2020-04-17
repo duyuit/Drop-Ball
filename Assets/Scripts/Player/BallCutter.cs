@@ -4,27 +4,22 @@ using UnityEngine;
 
 public class BallCutter : MonoBehaviour
 {
-    private AwakeCircleClipper _clipper;
+    public AwakeCircleClipper clipper;
+    public AwakeCircleClipper clipper1;
     private DelayFunctionHelper _delay;
 
     public bool hasCut = false;
 
     private void Awake()
     {
-        _clipper = GetComponent<AwakeCircleClipper>();
         _delay = gameObject.AddComponent<DelayFunctionHelper>();
     }
 
-    public void Cut(GameObject block)
+    public void Cut()
     {
-        //_delay.delayFunction(() =>
-        //{
-        MyBlock blockComp = block.GetComponent<MyBlock>();
-        MapGenerator.Instance.Cut(blockComp, _clipper);
-        GameController.Instance.SetLastBlock(blockComp);
-
+        clipper.Cut();
+        clipper1.Cut();
         hasCut = true;
-        //}, 0.01f);
     }
 
     public void ResetHasCut()

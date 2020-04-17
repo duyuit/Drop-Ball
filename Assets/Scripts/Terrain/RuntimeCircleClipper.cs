@@ -5,11 +5,12 @@ using UnityEngine;
 
 using Vector2i = ClipperLib.IntPoint;
 using Vector2f = UnityEngine.Vector2;
+using ClipperLib;
 
 public class RuntimeCircleClipper : MonoBehaviour, IClip
 {
-    private Bot _bot;
-    private struct TouchLineOverlapCheck
+    public ClipType clipType = ClipType.Sub;
+    private struct TouchLineOverlapCheck 
     {
         public float a;
         public float b;
@@ -41,11 +42,9 @@ public class RuntimeCircleClipper : MonoBehaviour, IClip
         }
     }
 
-    public MyBlock terrain;
-
     public float diameter = 1.2f;
 
-    private float radius = 1.2f;
+    public float radius { get { return diameter / 2f; } }
 
     public int segmentCount = 10;
 
@@ -59,11 +58,13 @@ public class RuntimeCircleClipper : MonoBehaviour, IClip
 
     private TouchLineOverlapCheck touchLine;
 
-    private List<Vector2i> vertices = new List<Vector2i>();
+    private Vector2i[] vertices;
 
     private Camera mainCamera;
 
     private float cameraZPos;
+
+    private Mesh mesh;
 
     public bool CheckBlockOverlapping(Vector2f p, float size)
     {
@@ -74,7 +75,7 @@ public class RuntimeCircleClipper : MonoBehaviour, IClip
             return dx < 0f && dy < 0f;
         }
         else if (touchPhase == TouchPhase.Moved)
-        {
+        {          
             float distance = touchLine.GetDistance(p) - radius - size / touchLine.dividend;
             return distance < 0f;
         }
@@ -117,80 +118,126 @@ public class RuntimeCircleClipper : MonoBehaviour, IClip
             return new ClipBounds();
     }
 
-    public List<Vector2i> GetVertices()
+    public Vector2i[] GetVertices()
     {
         return vertices;
+    }
+
+    public Mesh GetMesh()
+    {
+        return mesh;
     }
 
     void Awake()
     {
         mainCamera = Camera.main;
         cameraZPos = mainCamera.transform.position.z;
-        radius = diameter / 2f;
 
-        _bot = GetComponent<Bot>();
+        mesh = new Mesh();
+        mesh.MarkDynamic();
     }
 
-    private void OnTriggerEnter(Collider other)
+    void Start()
     {
-        //if (other.gameObject.tag == "Grass" && !_bot.IsBouncing)
-        //{
-        //    terrain = other.GetComponent<MyBlock>();
-        //    GameController.Instance.AddDamageBlock(terrain);
-        //    UpdateTouch();
-        //}
+        
+    }
+
+    void Update()
+    {
+        UpdateTouch();
     }
 
     void UpdateTouch()
     {
-        var temp = transform.position - terrain.transform.position;
-        currentTouchPoint.x = temp.x;
-        currentTouchPoint.y = temp.z;
+        if (TouchUtility.Enabled && TouchUtility.TouchCount > 0)
+        {
+            Touch touch = TouchUtility.GetTouch(0);
+            Vector2 touchPosition = touch.position;
 
-        if ((currentTouchPoint - previousTouchPoint).sqrMagnitude <= touchMoveDistance * touchMoveDistance)
-            return;
+            touchPhase = touch.phase;
+            if (touch.phase == TouchPhase.Began)
+            {
+                currentTouchPoint = mainCamera.ScreenToWorldPoint(new Vector3(touchPosition.x, touchPosition.y, -cameraZPos));
 
+                Build(currentTouchPoint);
 
-        BuildVertices(currentTouchPoint);
+                DestructibleTerrainManager.Instance.Clip(this, clipType);
 
-        terrain.ExecuteClip(this);
+                previousTouchPoint = currentTouchPoint;            
+            }
+            else if (touch.phase == TouchPhase.Moved)
+            {
+                currentTouchPoint = mainCamera.ScreenToWorldPoint(new Vector3(touchPosition.x, touchPosition.y, -cameraZPos));
+ 
+                if ((currentTouchPoint - previousTouchPoint).sqrMagnitude <= touchMoveDistance * touchMoveDistance)
+                    return;
+               
+                Build(previousTouchPoint, currentTouchPoint);
 
-        previousTouchPoint = currentTouchPoint;
+                DestructibleTerrainManager.Instance.Clip(this, clipType);
+
+                previousTouchPoint = currentTouchPoint;
+            }
+        }
     }
 
-    void BuildVertices(Vector2 center)
+    void Build(Vector2 center)
     {
-        vertices.Clear();
+        Vector3[] meshVertices = new Vector3[segmentCount];
+        Vector3[] meshNormals = new Vector3[segmentCount];
+        vertices = new Vector2i[segmentCount];
+
         for (int i = 0; i < segmentCount; i++)
         {
             float angle = Mathf.Deg2Rad * (-90f - 360f / segmentCount * i);
 
             Vector2 point = new Vector2(center.x + radius * Mathf.Cos(angle), center.y + radius * Mathf.Sin(angle));
-            Vector2i point_i64 = point.ToVector2i();
-            vertices.Add(point_i64);
+            vertices[i] = point.ToVector2i();
+
+            meshVertices[i] = point.ToVector3f();
+            meshNormals[i] = (meshVertices[i] - center.ToVector3f()) / radius;
         }
+
+        mesh.Clear();
+        mesh.vertices = meshVertices;
+        mesh.normals = meshNormals;
+        mesh.triangles = Triangulate.Execute(meshVertices).ToArray();
     }
 
-    void BuildVertices(Vector2 begin, Vector2 end)
+    void Build(Vector2 begin, Vector2 end)
     {
-        vertices.Clear();
         int halfSegmentCount = segmentCount / 2;
         touchLine = new TouchLineOverlapCheck(begin, end);
 
+        Vector3[] meshVertices = new Vector3[segmentCount + 2];
+        Vector3[] meshNormals = new Vector3[segmentCount + 2];
+        vertices = new Vector2i[segmentCount + 2];
+              
         for (int i = 0; i <= halfSegmentCount; i++)
         {
-            float angle = Mathf.Deg2Rad * (touchLine.angle + 270f - (float)360f / segmentCount * i);
+            float angle = Mathf.Deg2Rad * (touchLine.angle + 270f - 360f / segmentCount * i);
+
             Vector2 point = new Vector2(begin.x + radius * Mathf.Cos(angle), begin.y + radius * Mathf.Sin(angle));
-            Vector2i point_i64 = point.ToVector2i();
-            vertices.Add(point_i64);
+            vertices[i] = point.ToVector2i();
+
+            meshVertices[i] = point.ToVector3f();
+            meshNormals[i] = (meshVertices[i] - begin.ToVector3f()) / radius;
         }
 
         for (int i = halfSegmentCount; i <= segmentCount; i++)
         {
-            float angle = Mathf.Deg2Rad * (touchLine.angle + 270f - (float)360f / segmentCount * i);
+            float angle = Mathf.Deg2Rad * (touchLine.angle + 270f - 360f / segmentCount * i);
+
             Vector2 point = new Vector2(end.x + radius * Mathf.Cos(angle), end.y + radius * Mathf.Sin(angle));
-            Vector2i point_i64 = point.ToVector2i();
-            vertices.Add(point_i64);
-        }
+            vertices[i+1] = point.ToVector2i();
+
+            meshVertices[i+1] = point.ToVector3f();
+            meshNormals[i+1] = (meshVertices[i+1] - end.ToVector3f()) / radius;
+        }      
+
+        mesh.Clear();
+        mesh.vertices = meshVertices;
+        mesh.normals = meshNormals;
+        mesh.triangles = Triangulate.Execute(meshVertices).ToArray();
     }
 }

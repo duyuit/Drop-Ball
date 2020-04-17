@@ -67,7 +67,7 @@ public class DestructibleTerrain : MonoBehaviour
 
                 UpdateBlockBounds(x, y);
 
-                block.UpdateGeometryWithMoreVertices(polygons, width, height, depth);
+                //block.UpdateGeometryWithMoreVertices(polygons, width, height, depth);
             }
         }
     }
@@ -79,15 +79,15 @@ public class DestructibleTerrain : MonoBehaviour
 
     private DestructibleBlock CreateBlock()
     {
-        GameObject childObject = new GameObject();
-        childObject.name = "DestructableBlock";
-        childObject.transform.SetParent(transform);
-        childObject.transform.localPosition = Vector3.zero;
+        //GameObject childObject = new GameObject();
+        //childObject.name = "DestructableBlock";
+        //childObject.transform.SetParent(transform);
+        //childObject.transform.localPosition = Vector3.zero;
 
-        DestructibleBlock blockComp = childObject.AddComponent<DestructibleBlock>();
-        blockComp.SetMaterial(material);
+        //DestructibleBlock blockComp = childObject.AddComponent<DestructibleBlock>();
+        //blockComp.SetMaterial(material);
 
-        return blockComp;
+        return null;
     }
 
     private void UpdateBlockBounds(int x, int y)
@@ -119,7 +119,7 @@ public class DestructibleTerrain : MonoBehaviour
     {
         BlockSimplification.epsilon = (int64)(simplifyEpsilonPercent / 100f * blockSize * VectorEx.float2int64);
 
-        List<Vector2i> clipVertices = clip.GetVertices();
+        List<Vector2i> clipVertices/* = clip.GetVertices()*/;
 
         ClipBounds bounds = clip.GetBounds();
         int x1 = Mathf.Max(0, (int)(bounds.lowerPoint.x / blockSize));
@@ -142,14 +142,14 @@ public class DestructibleTerrain : MonoBehaviour
                     List<List<Vector2i>> solutions = new List<List<Vector2i>>();
 
                     ClipperLib.Clipper clipper = new ClipperLib.Clipper();
-                    clipper.AddPolygons(block.Polygons, ClipperLib.PolyType.ptSubject);
-                    clipper.AddPolygon(clipVertices, ClipperLib.PolyType.ptClip);
+                    //clipper.AddPolygons(block.Polygons, ClipperLib.PolyType.ptSubject);
+                    //clipper.AddPolygon(clipVertices, ClipperLib.PolyType.ptClip);
                     clipper.Execute(ClipperLib.ClipType.ctDifference, solutions,
                         ClipperLib.PolyFillType.pftNonZero, ClipperLib.PolyFillType.pftNonZero);
 
                     UpdateBlockBounds(x, y);
 
-                    block.UpdateGeometryWithMoreVertices(solutions, width, height, depth);
+                    //block.UpdateGeometryWithMoreVertices(solutions, width, height, depth);
                 }
                 
             }

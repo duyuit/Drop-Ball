@@ -17,6 +17,7 @@ public class BallCatcher : MonoBehaviour
 
     private float _lastFireTime = 0;
     private float _lastCatchTime = 0;
+    private bool _isCatched = false;
 
 
     // Start is called before the first frame update
@@ -50,7 +51,9 @@ public class BallCatcher : MonoBehaviour
         _ball.GetComponent<Collider>().enabled = false;
 
         ball.transform.parent = transform;
-        ball.transform.DOLocalMove(Vector3.zero, 0.2f);
+        ball.transform.DOLocalMove(Vector3.zero, 0.2f).OnComplete(()=> {
+            _isCatched = true;
+        });
 
         _lastCatchTime = Time.time;
         _ball.GetComponent<Ball>().SetHolder(this);
@@ -61,7 +64,7 @@ public class BallCatcher : MonoBehaviour
         }
         else
         {
-            Vibration.Vibrate(100);
+            //Vibration.Vibrate(100);
         }
     }
 
@@ -84,10 +87,16 @@ public class BallCatcher : MonoBehaviour
         }
     }
 
+    public void Reset()
+    {
+        _ball = null;
+        _isCatched = false;
+        arrowParent.gameObject.SetActive(false);
+    }
 
     private void Fire()
     {
-        if (_ball != null)
+        if (_ball != null && _isCatched)
         {
             arrowParent.gameObject.SetActive(false);
             arrow.localScale = Vector3.one;
@@ -112,7 +121,9 @@ public class BallCatcher : MonoBehaviour
             _lastFireTime = Time.time;
 
             GameController.Instance.isStarted = true;
+            SoundController.Instance.PlayFireSound();
             onFire?.Invoke();
+            _isCatched = false;
         }
     }
 

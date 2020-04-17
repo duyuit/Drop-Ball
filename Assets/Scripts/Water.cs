@@ -15,21 +15,19 @@ public class Water : MonoBehaviour
         switch (layer)
         {
             case 8: // Ball
-
+                Debug.Log("Drop ball");
                 GameController.Instance.DropBall();
-                GameController.Instance.Reset();
                 //diePS = Instantiate(playerDiePrefab);
                 //GameController.Instance.Lose();
 
                 break;
             case 9: // Player 
-                GameController.Instance.SetWinner(Winner.BOT);
-                //diePS = Instantiate(enemyDiePrefab);
-                //GameController.Instance.OnKill(other.GetComponent<Bot>());
+                if (other.GetComponentInChildren<BallCatcher>().HasBall())
+                    GameController.Instance.DropBall();
                 break;
             case 10: // Bot
                 if (other.GetComponentInChildren<BallCatcher>().HasBall())
-                    GameController.Instance.SetWinner(Winner.PLAYER);
+                    GameController.Instance.DropBall();
                 return;
 
         }

@@ -14,11 +14,10 @@ Shader "Custom/DiffuseTextureScale"
 		
 	SubShader
 	{
-		Tags { "RenderType" = "Opaque" }
-		LOD 150
+		Tags {"Queue" = "Transparent" "RenderType" = "Transparent" }
 
 		CGPROGRAM
-		#pragma surface surf Lambert noforwardadd
+		#pragma surface surf Lambert noforwardadd alpha:fade
 
 		sampler2D _MainTex;
 		float4 _BaseColor;
@@ -35,8 +34,7 @@ Shader "Custom/DiffuseTextureScale"
 			float2 uv = float2(IN.uv_MainTex.x * _TextureScaleX, IN.uv_MainTex.y * _TextureScaleY);
 			fixed4 c = tex2D(_MainTex, uv) * _BaseColor;			
 			o.Albedo = c.rgb;			
-			//o.Alpha = c.a;
-			o.Alpha = 1;
+			o.Alpha = c.a;
 		}
 		ENDCG
 	}

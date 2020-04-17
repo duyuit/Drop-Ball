@@ -20,6 +20,15 @@ public static class VectorEx
         };
     }
 
+    public static Vector2i ToVector2i(this Vector3 p)
+    {
+        return new Vector2i
+        {
+            x = (int64)(p.x * float2int64),
+            y = (int64)(p.y * float2int64)
+        };
+    }
+
     public static Vector3 ToVector3f(this Vector2f p)
     {
         return new Vector3

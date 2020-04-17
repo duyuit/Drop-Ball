@@ -4,11 +4,12 @@ using UnityEngine;
 
 public static class TouchUtility 
 {
+    public static bool Enabled = true;
     public static int TouchCount
     {
         get 
         {
-#if UNITY_ANDROID || UNITY_IOS
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             return Input.touchCount;
 #else
             if (Input.GetMouseButton(0) || Input.GetMouseButtonDown(0)/* || Input.GetMouseButtonUp(0)*/ )
@@ -21,7 +22,7 @@ public static class TouchUtility
 
     public static Touch GetTouch(int index)
     {
-#if UNITY_ANDROID || UNITY_IOS
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             return Input.GetTouch(index);
 #else
         Touch touch = new Touch();

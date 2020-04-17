@@ -89,6 +89,90 @@ public static class Triangulate
             }
         }
     }
+    public static List<int> Execute(Vector3[] vertices)
+    {
+        List<int> triangles = new List<int>();
+
+        int size = vertices.Length;
+        if (size == 3)
+        {
+            triangles.Add(0);
+            triangles.Add(1);
+            triangles.Add(2);
+        }
+        else if (size > 3)
+        {
+            int remainingCount = size;
+            bool[] visited = new bool[size];
+
+            int a = 0;
+            int b = 1;
+            int c = 2;
+
+            int it = size * 3;
+            while (it >= 0)
+            {
+                it--;
+                bool validTriangle = true;
+
+                if (!TriangleIsClockwise(vertices[a], vertices[b], vertices[c]))
+                {
+                    validTriangle = false;
+                }
+
+                if (validTriangle)
+                {
+                    for (int i = 0; i < size; i++)
+                    {
+                        if (visited[i] == false && i != a && i != b && i != c)
+                        {
+                            if (TriangleContainsPoint(vertices[a], vertices[b], vertices[c], vertices[i]))
+                            {
+                                validTriangle = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (validTriangle)
+                {
+                    triangles.Add(a);
+                    triangles.Add(b);
+                    triangles.Add(c);
+
+                    if (remainingCount == 3)
+                    {
+                        break;
+                    }
+
+                    visited[b] = true;
+                    remainingCount--;
+
+                    b = c;
+                }
+                else
+                {
+                    a = b;
+                    b = c;
+                }
+
+                for (int i = 0; i < size; i++)
+                {
+                    c = c + 1;
+                    if (c >= size)
+                        c = 0;
+
+                    if (!visited[c])
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+
+        return triangles;
+    }
 
     public static bool TriangleContainsPoint(Vector2f A, Vector2f B, Vector2f C, Vector2f P)
     {

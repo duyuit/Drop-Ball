@@ -57,11 +57,11 @@ public class BallBouncer : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Grass" && Time.time - _lastBounceTime > _delayGenerateForce)
+        if (collision.gameObject.CompareTag("Ground") && Time.time - _lastBounceTime > _delayGenerateForce)
         {
-            Vibration.VibratePop();
+            //Vibration.VibratePop();
             Bounce(collision.contacts[0].normal);
-            ballCutter.Cut(collision.gameObject);
+            ballCutter.Cut();
             bouncePS.Play();
         }
     }
@@ -80,6 +80,7 @@ public class BallBouncer : MonoBehaviour
 
         //trampoline.Play("Bounce");
         CameraController.Instance.Shake();
+        SoundController.Instance.PlayBounceSound();
 
         _animator.Play("Bounce");
         //_delayHelper.delayFunction(() =>
