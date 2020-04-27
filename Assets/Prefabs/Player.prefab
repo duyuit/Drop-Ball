@@ -300,7 +300,7 @@ GameObject:
   - component: {fileID: 115391750357430948}
   m_Layer: 9
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1316,6 +1316,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3546153724459420495}
   - component: {fileID: 3546153724459420492}
+  - component: {fileID: 3866468874479719058}
   m_Layer: 9
   m_Name: Arrow Parent
   m_TagString: Untagged
@@ -1388,6 +1389,21 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &3866468874479719058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3546153724459420494}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d191f41e5e7e8b49b2d095b70deffbf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isMe: 1
+  isLeft: 1
+  speed: 60
 --- !u!1 &3546153724505425181
 GameObject:
   m_ObjectHideFlags: 0
@@ -1466,6 +1482,8 @@ MonoBehaviour:
   isBot: 0
   arrowParent: {fileID: 3546153724459420495}
   arrow: {fileID: 3546153723770322999}
+  isMe: 1
+  playerTag: 0
 --- !u!1 &3546153725671259057
 GameObject:
   m_ObjectHideFlags: 0

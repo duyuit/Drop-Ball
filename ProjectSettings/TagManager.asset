@@ -13,6 +13,7 @@ TagManager:
   - Ball
   - PlayerRange
   - EnemyRange
+  - Opponent
   layers:
   - Default
   - TransparentFX

@@ -10,6 +10,10 @@ public class BallCatcher : MonoBehaviour
     public Transform arrowParent;
     public Transform arrow;
     public Action onFire;
+    public bool isMe = false;
+
+    [HideInInspector]
+    public PlayerTag playerTag;
 
     private Ball _ball;
     private DelayFunctionHelper _delay;
@@ -25,18 +29,50 @@ public class BallCatcher : MonoBehaviour
     {
         _delay = gameObject.AddComponent<DelayFunctionHelper>();
 
-        if (!isBot)
+        if (isMe)
             InputController.Instance.onMouseRelease += Fire;
 
-        RotateArrow();
+        if (GlobalVariable.isOnline)
+        {
+            NetworkController.Instance.onFireBall += Fire;
+        }
+        //RotateArrow();
     }
 
-    private void RotateArrow()
+    //private void RotateArrow()
+    //{
+    //    arrowParent.DOLocalRotate(new Vector3(90, -30, 0), 1).SetEase(Ease.Linear).OnComplete(() =>
+    //    {
+    //        arrowParent.DOLocalRotate(new Vector3(90, 30, 0), 1).SetEase(Ease.Linear).OnComplete(() => RotateArrow());
+    //    });
+    //}
+
+    public void Fire(Vector3 forceVector)
     {
-        arrowParent.DOLocalRotate(new Vector3(90, -30, 0), 1).SetEase(Ease.Linear).OnComplete(() =>
+        if (_ball != null && _isCatched)
         {
-            arrowParent.DOLocalRotate(new Vector3(90, 30, 0), 1).SetEase(Ease.Linear).OnComplete(() => RotateArrow());
-        });
+            arrowParent.gameObject.SetActive(false);
+            arrow.localScale = Vector3.one;
+
+            _ball.transform.parent = null;
+
+            _ball.GetComponent<Collider>().enabled = true;
+
+            _ballRB.isKinematic = false;
+            _ballRB.AddForce(forceVector);
+
+            _ball.GetComponent<Ball>().Release();
+
+            _ballRB = null;
+            _ball = null;
+
+            _lastFireTime = Time.time;
+
+            GameController.Instance.isStarted = true;
+            SoundController.Instance.PlayFireSound();
+            onFire?.Invoke();
+            _isCatched = false;
+        }
     }
 
     public void TakeBall(Ball ball)
@@ -51,7 +87,8 @@ public class BallCatcher : MonoBehaviour
         _ball.GetComponent<Collider>().enabled = false;
 
         ball.transform.parent = transform;
-        ball.transform.DOLocalMove(Vector3.zero, 0.2f).OnComplete(()=> {
+        ball.transform.DOLocalMove(Vector3.zero, 0.2f).OnComplete(() =>
+        {
             _isCatched = true;
         });
 
@@ -60,10 +97,12 @@ public class BallCatcher : MonoBehaviour
 
         if (isBot)
         {
-            _delay.delayFunction(() => { Fire(); }, UnityEngine.Random.Range(1f,2f));
+            _delay.delayFunction(() => { Fire(); }, UnityEngine.Random.Range(1f, 2f));
         }
         else
         {
+            if (isMe)
+                _delay.delayFunction(() => { Fire(); }, 1.5f);
             //Vibration.Vibrate(100);
         }
     }
@@ -110,20 +149,32 @@ public class BallCatcher : MonoBehaviour
             _ball.GetComponent<Collider>().enabled = true;
 
             _ballRB.isKinematic = false;
-            _ballRB.AddForce(arrowParent.up.normalized * force);
-            _ballRB.AddForce(Vector3.up * force / 3f);
+            Vector3 forceVector = arrowParent.up.normalized * force + Vector3.up * force / 3f;
+            _ballRB.AddForce(forceVector);
 
             _ball.GetComponent<Ball>().Release();
 
-            _ballRB = null;
-            _ball = null;
 
             _lastFireTime = Time.time;
 
-            GameController.Instance.isStarted = true;
+            if (GlobalVariable.isOnline)
+                GameOnlineController.Instance.isStarted = true;
+            else
+                GameController.Instance.isStarted = true;
+
             SoundController.Instance.PlayFireSound();
             onFire?.Invoke();
             _isCatched = false;
+
+            if (GlobalVariable.isOnline)
+            {
+                Debug.Log(_ball);
+                NetworkController.Instance.SendBallPosition(_ball.transform.position);
+                NetworkController.Instance.SendFireBall(forceVector);
+            }
+
+            _ballRB = null;
+            _ball = null;
         }
     }
 

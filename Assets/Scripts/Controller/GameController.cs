@@ -9,7 +9,9 @@ public enum PlayerTag
 {
     PLAYER,
     BOT,
-    NONE
+    NONE,
+    PLAYER1,
+    PLAYER2
 }
 
 public class GameController : MonoBehaviour
@@ -59,6 +61,32 @@ public class GameController : MonoBehaviour
         }
 
         _delayHelper = gameObject.AddComponent<DelayFunctionHelper>();
+    }
+    private void Start()
+    {
+        _listBot = new List<Bot>();
+        foreach (var bot in FindObjectsOfType<Bot>())
+        {
+            _listBot.Add(bot);
+        }
+
+        _winText = new List<string>();
+        _loseText = new List<string>();
+        _winText.Add("YEAH!!");
+        _winText.Add("BOOYAH!!");
+        _winText.Add("AHAHA!!");
+        _winText.Add("HOORAYY!!");
+        _loseText.Add("OOPS!");
+        _loseText.Add("AGAIN!");
+        _loseText.Add("****!");
+        _loseText.Add("HM . . .");
+
+        isWaiting = true;
+        ShowText("Round " + 1, 2f);
+        _delayHelper.delayFunction(() =>
+        {
+            isWaiting = false;
+        }, 3f);
     }
 
     private void ShowWinnerText(PlayerTag winner)
@@ -127,32 +155,7 @@ public class GameController : MonoBehaviour
         }, 2f);
     }
 
-    private void Start()
-    {
-        _listBot = new List<Bot>();
-        foreach (var bot in FindObjectsOfType<Bot>())
-        {
-            _listBot.Add(bot);
-        }
-
-        _winText = new List<string>();
-        _loseText = new List<string>();
-        _winText.Add("YEAH!!");
-        _winText.Add("BOOYAH!!");
-        _winText.Add("AHAHA!!");
-        _winText.Add("HOORAYY!!");
-        _loseText.Add("OOPS!");
-        _loseText.Add("AGAIN!");
-        _loseText.Add("****!");
-        _loseText.Add("HM . . .");
-
-        isWaiting = true;
-        ShowText("Round " + 1, 2f);
-        _delayHelper.delayFunction(() =>
-        {
-            isWaiting = false;
-        }, 3f);
-    }
+   
 
     public void ShowText(string text, float time = 1f)
     {

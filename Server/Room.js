@@ -1,6 +1,6 @@
 const shortID = require('shortid');
 const Player = require('./Player');
-const NetworkCommand = require('./NetworkCommand');
+const NetworkCommand = require('./function');
 
 module.exports = class Room {
     constructor() {
@@ -12,47 +12,84 @@ module.exports = class Room {
         this.timer = 120;
         this.player1Score = 0;
         this.player2Score = 0;
+
+        this.player1WinRound = 0;
+        this.player2WinRound = 0;
+
         this.playerOutOfMoveFirst = null;
 
 
         // setTimeout(() => {
         //     console.log("Time out!");
         // }, 60000);
-        this.interValID = setInterval(() => {
-            if (this.socket1 != null)
-                this.socket1.emit(NetworkCommand.updateTimer, { time: this.timer });
-            if (this.socket2 != null)
-                this.socket2.emit(NetworkCommand.updateTimer, { time: this.timer });
-            this.timer--;
-            if(this.timer == -1)
-            {
-                this.onEndGame();
-            }
-        }, 1000);
+        // this.interValID = setInterval(() => {
+        //     if (this.socket1 != null)
+        //         this.socket1.emit(NetworkCommand.updateTimer, { time: this.timer });
+        //     if (this.socket2 != null)
+        //         this.socket2.emit(NetworkCommand.updateTimer, { time: this.timer });
+        //     this.timer--;
+        //     if(this.timer == -1)
+        //     {
+        //         this.onEndGame();
+        //     }
+        // }, 1000);
     }
     onEndGame()
     {
         // -1 -> LOSE
         // 0 -> DRAW
         // 1 -> Win
-        if (this.player1Score > this.player2Score)
+        // if (this.player1Score > this.player2Score)
+        // {
+        //     this.setPlayerWin(1);
+        // }
+        // else if(this.player2Score > this.player1Score)
+        // {
+        //     this.setPlayerWin(2);
+        // }
+        // else
+        // {
+        //     this.setPlayerWin(0);
+        // }
+    }
+
+    HasWin(socket)
+    {
+        var winnerIndex = 0;
+
+        if(socket == this.socket1)
         {
-            this.setPlayerWin(1);
-        }
-        else if(this.player2Score > this.player1Score)
-        {
-            this.setPlayerWin(2);
+            //this.player1Score++;
+            winnerIndex = 1;
         }
         else
         {
-            this.setPlayerWin(0);
+            //this.player2Score++;
+            winnerIndex = 2;
         }
+          
+         console.log(winnerIndex);
+
+        // if(this.player1Score == 5 || this.player2Score == 5)
+        // {
+        //     if(this.player1Score == 5)
+        //         this.player1WinRound++;
+        //     else
+        //         this.player2WinRound++;
+
+        //     this.player1Score = this.player2Score = 0;
+        // }
+
+         this.socket1.emit(NetworkCommand.reset,{winner: winnerIndex});
+         this.socket2.emit(NetworkCommand.reset,{winner: winnerIndex});
     }
+
     deleteRoom()
     {
         clearInterval(this.interValID);
         this.deleteRoomCallBack();
     }
+
     deleteRoomCallBack()
     {
 

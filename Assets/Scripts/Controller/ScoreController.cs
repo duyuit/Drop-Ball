@@ -44,70 +44,141 @@ public class ScoreController : MonoBehaviour
 
     public void AddScore(PlayerTag winner)
     {
-        if (winner == PlayerTag.BOT)
+        if (GlobalVariable.isOnline)
         {
-            _botScore++;
-            botScoreText.text = _botScore.ToString();
-        }
-        else
-        {
-            _playerScore++;
-            playerScoreText.text = _playerScore.ToString();
-        }
-
-
-        if (_botScore == 5 || _playerScore == 5)
-        {
-            Image currentRoundImage = listScoreImage[_currentRound - 1];
-            Color color;
-
-            if (winner == PlayerTag.BOT)
+            if (GameOnlineController.Instance.IsMe(winner))
             {
-                _botWinRound++;
-                color = loseColor;
+                _playerScore++;
+                playerScoreText.text = _playerScore.ToString();
             }
             else
             {
-                _playerWinRound++;
-                color = winColor;
+                _botScore++;
+                botScoreText.text = _botScore.ToString();
             }
 
-            _currentRound++;
-            if (_playerWinRound >= 3 || _botWinRound >= 3)
+            if (_botScore == 5 || _playerScore == 5)
             {
-                GameController.Instance.EndGame(winner);
-                targetCircle.color = color;
-                targetCircle.transform.position = currentRoundImage.transform.position;
-                targetCircle.transform.localScale = new Vector3(10, 10, 1);
-                targetCircle.transform.DOScale(0, 1f).OnComplete(() =>
-                {
-                    currentRoundImage.color = color;
-                    currentRoundImage.transform.localScale = Vector3.zero;
-                    currentRoundImage.transform.DOScale(Vector3.one, 0.5f);
-                });
-                return;
-            }
+                Image currentRoundImage = listScoreImage[_currentRound - 1];
+                Color color;
 
-            GameController.Instance.EndRound(winner, () =>
-            {
-                targetCircle.color = color;
-                targetCircle.transform.position = currentRoundImage.transform.position;
-                targetCircle.transform.localScale = new Vector3(10, 10, 1);
-                targetCircle.transform.DOScale(0, 1f).OnComplete(() =>
+                if (GameOnlineController.Instance.IsMe(winner))
                 {
-                    currentRoundImage.color = color;
-                    currentRoundImage.transform.localScale = Vector3.zero;
-                    currentRoundImage.transform.DOScale(Vector3.one, 0.5f).OnComplete(() =>
+                    _playerWinRound++;
+                    color = winColor;
+                }
+                else
+                {
+                    _botWinRound++;
+                    color = loseColor;
+                }
+
+                _currentRound++;
+                if (_playerWinRound >= 3 || _botWinRound >= 3)
+                {
+                    GameOnlineController.Instance.EndGame(winner);
+                    targetCircle.color = color;
+                    targetCircle.transform.position = currentRoundImage.transform.position;
+                    targetCircle.transform.localScale = new Vector3(10, 10, 1);
+                    targetCircle.transform.DOScale(0, 1f).OnComplete(() =>
                     {
-                        GameController.Instance.ShowText("Round " + _currentRound);
+                        currentRoundImage.color = color;
+                        currentRoundImage.transform.localScale = Vector3.zero;
+                        currentRoundImage.transform.DOScale(Vector3.one, 0.5f);
                     });
+                    return;
+                }
+
+                GameOnlineController.Instance.EndRound(winner, () =>
+                {
+                    targetCircle.color = color;
+                    targetCircle.transform.position = currentRoundImage.transform.position;
+                    targetCircle.transform.localScale = new Vector3(10, 10, 1);
+                    targetCircle.transform.DOScale(0, 1f).OnComplete(() =>
+                    {
+                        currentRoundImage.color = color;
+                        currentRoundImage.transform.localScale = Vector3.zero;
+                        currentRoundImage.transform.DOScale(Vector3.one, 0.5f).OnComplete(() =>
+                        {
+                            GameOnlineController.Instance.ShowText("Round " + _currentRound);
+                        });
+                    });
+
+
+                    _botScore = _playerScore = 0;
+                    botScoreText.text = playerScoreText.text = "0";
                 });
-
-
-                _botScore = _playerScore = 0;
-                botScoreText.text = playerScoreText.text = "0";
-            });
+            }
         }
+        else
+        {
+            if (winner == PlayerTag.BOT)
+            {
+                _botScore++;
+                botScoreText.text = _botScore.ToString();
+            }
+            else
+            {
+                _playerScore++;
+                playerScoreText.text = _playerScore.ToString();
+            }
+            if (_botScore == 5 || _playerScore == 5)
+            {
+                Image currentRoundImage = listScoreImage[_currentRound - 1];
+                Color color;
+
+                if (winner == PlayerTag.BOT)
+                {
+                    _botWinRound++;
+                    color = loseColor;
+                }
+                else
+                {
+                    _playerWinRound++;
+                    color = winColor;
+                }
+
+                _currentRound++;
+                if (_playerWinRound >= 3 || _botWinRound >= 3)
+                {
+                    GameController.Instance.EndGame(winner);
+                    targetCircle.color = color;
+                    targetCircle.transform.position = currentRoundImage.transform.position;
+                    targetCircle.transform.localScale = new Vector3(10, 10, 1);
+                    targetCircle.transform.DOScale(0, 1f).OnComplete(() =>
+                    {
+                        currentRoundImage.color = color;
+                        currentRoundImage.transform.localScale = Vector3.zero;
+                        currentRoundImage.transform.DOScale(Vector3.one, 0.5f);
+                    });
+                    return;
+                }
+
+                GameController.Instance.EndRound(winner, () =>
+                {
+                    targetCircle.color = color;
+                    targetCircle.transform.position = currentRoundImage.transform.position;
+                    targetCircle.transform.localScale = new Vector3(10, 10, 1);
+                    targetCircle.transform.DOScale(0, 1f).OnComplete(() =>
+                    {
+                        currentRoundImage.color = color;
+                        currentRoundImage.transform.localScale = Vector3.zero;
+                        currentRoundImage.transform.DOScale(Vector3.one, 0.5f).OnComplete(() =>
+                        {
+                            GameController.Instance.ShowText("Round " + _currentRound);
+                        });
+                    });
+
+
+                    _botScore = _playerScore = 0;
+                    botScoreText.text = playerScoreText.text = "0";
+                });
+            }
+
+        }
+
+
+
     }
 
 

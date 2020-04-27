@@ -2,7 +2,7 @@ const express = require('express');
 const socketIO = require('socket.io');
 const path = require('path');
 const Player = require('./Player');
-const NetworkCommand = require('./NetworkCommand');
+const NetworkCommand = require('./function');
 const Room = require('./Room');
 
 const PORT = process.env.PORT || 8888;
@@ -39,14 +39,42 @@ io.on('connection', (socket) => {
         console.log('register name: %s', name);
     });
 
-    socket.on(NetworkCommand.updatePosition, (data) => {
-        var roomValue = GetRoomHaveSocket(socket);
-        if (roomValue) {
-            var opponentSocket = roomValue.getOpponentSocket(socket);
-            if (opponentSocket != null)
-                opponentSocket.emit(NetworkCommand.updatePosition, data);
-        }
+    socket.on('disconnect', () => {
+        HandleExitRoom(socket, playerID);
+
+        // Delete player in list
+        delete players[playerID];
+        delete sockets[playerID];
+        delete waitingPlayers[playerID];
+
+        console.log('Rooms: ' + rooms.length);
+        console.log('disconnected');
     })
+
+    socket.on(NetworkCommand.updatePosition, (data) => {
+            PassData(socket,data,NetworkCommand.updatePosition);
+    });
+
+    socket.on(NetworkCommand.updateBallPosition, (data) => {
+        PassData(socket,data,NetworkCommand.updateBallPosition);
+    });
+
+    socket.on(NetworkCommand.updateVelo, (data) => {
+        PassData(socket,data,NetworkCommand.updateVelo);
+    });
+
+    socket.on(NetworkCommand.fireBall, (data) => {
+        PassData(socket,data,NetworkCommand.fireBall);
+    });
+
+    socket.on(NetworkCommand.updateArrowRotation, (data) => {
+        PassData(socket,data,NetworkCommand.updateArrowRotation);
+    });
+
+    socket.on(NetworkCommand.hasWin,()=>{
+        var roomHaveSocket = GetRoomHaveSocket(socket);
+        roomHaveSocket.HasWin(socket);
+    });
 
     socket.on(NetworkCommand.startMatchMaking, () => {
         waitingPlayers[playerID] = player;
@@ -92,6 +120,32 @@ io.on('connection', (socket) => {
     })
 
 });
+
+function HandleExitRoom(socket, playerID) {
+
+    // Delete room if have a player quit
+    var roomHaveSocket = GetRoomHaveSocket(socket);
+    if (roomHaveSocket != null) {
+        // Send win to the other player
+        // if (roomHaveSocket.player1.id == playerID) {
+        //     roomHaveSocket.setPlayerWin(2);
+        // } else {
+        //     roomHaveSocket.setPlayerWin(1);
+        // }
+
+        roomHaveSocket.deleteRoom();
+    }
+}
+
+function PassData(socket, data, command)
+{
+    var roomValue = GetRoomHaveSocket(socket);
+    if (roomValue) {
+        var opponentSocket = roomValue.getOpponentSocket(socket);
+        if (opponentSocket != null)
+            opponentSocket.emit(command, data);
+    }
+}
 
 function GetRoomHaveSocket(socket) {
     for (var room in rooms) {

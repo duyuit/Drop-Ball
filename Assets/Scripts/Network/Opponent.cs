@@ -3,28 +3,37 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Opponent : MonoBehaviour
+public class Opponent : Player.Player
 {
-    private Vector3 velocity;
+    private Vector2 _velocity;
     private void Start()
     {
+        _animator = GetComponent<Animator>();
+
         NetworkController.Instance.onOpponentMove += UpdatePosition;
+        NetworkController.Instance.onOpponentVelo += UpdateVelo;
+    }
+
+    private void UpdateVelo(Vector2 velo)
+    {
+        _velocity = velo;
     }
 
     public void UpdatePosition(Vector3 pos)
     {
-        velocity = pos;
+        transform.position = pos;
     }
 
-    private void Update()
+    protected override void FixedUpdate()
     {
-        transform.position += new Vector3(velocity.x, 0, velocity.y) * Time.fixedDeltaTime * 10;
+        if (!GameOnlineController.Instance.isWaiting)
+            transform.position += new Vector3(_velocity.x, 0, _velocity.y) * Time.fixedDeltaTime * 10;
     }
 
     private void OnDestroy()
     {
         NetworkController.Instance.onOpponentMove -= UpdatePosition;
+        NetworkController.Instance.onOpponentVelo -= UpdateVelo;
     }
-
 
 }

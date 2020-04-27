@@ -2,6 +2,7 @@
 
 namespace Player
 {
+
     public class Player : MonoBehaviour
     {
         public float speed = 10;
@@ -9,19 +10,25 @@ namespace Player
         public Joystick joyStick;
         protected Animator _animator;
 
-        private Rigidbody _rb;
+        protected Rigidbody _rb;
         protected Vector3 _originPos;
         protected BallCatcher _ballCatcher;
+        private float _lastSendPositionTime = 0;
 
-        private void Awake()
+        protected virtual void Awake()
         {
             _rb = GetComponent<Rigidbody>();
             _animator = GetComponent<Animator>();
 
-            _originPos = transform.position;
+            UpdateOriginPos();
             _ballCatcher = GetComponentInChildren<BallCatcher>();
 
             joyStick = FindObjectOfType<Joystick>();
+        }
+
+        public void UpdateOriginPos()
+        {
+            _originPos = transform.position;
         }
 
         protected virtual void FixedUpdate()
@@ -30,6 +37,9 @@ namespace Player
             {
                 if (!GameOnlineController.Instance.isWaiting)
                     HandleInput();
+
+               
+
             }
             else
             {
@@ -64,24 +74,27 @@ namespace Player
 
             if (Input.GetMouseButton(0))
             {
-                transform.position =
-                    transform.position + new Vector3(value.x, 0, value.y) * Time.fixedDeltaTime * speed;
+                transform.position += new Vector3(value.x, 0, value.y) * Time.fixedDeltaTime * speed;
                 Vector3 movement = new Vector3(value.x, 0.0f, value.y);
-                //_rb.velocity = movement *  speed;
                 dustPS.transform.rotation = Quaternion.LookRotation(movement);
                 _animator.SetTrigger("Run");
-
-
-                //if (!grassPS.isPlaying)
-                //    grassPS.Play();
             }
             else
             {
                 _animator.SetTrigger("Idle");
-                //grassPS.Stop();
             }
 
-            NetworkController.Instance.SendUpdatePosition(value);
+            if (GlobalVariable.isOnline)
+            {
+                NetworkController.Instance.SendUpdateVelocity(value);
+
+                if (Time.time - _lastSendPositionTime > 0.05f)
+                {
+                    NetworkController.Instance.SendUpdatePosition(transform.position);
+                    _lastSendPositionTime = Time.time;
+                }
+            }
+              
         }
     }
 }

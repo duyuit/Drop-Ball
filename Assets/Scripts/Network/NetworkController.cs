@@ -19,6 +19,12 @@ public class NetworkController : SocketIOComponent
     public Action<string> onStartGame;
     public Action<string> onUpdateScore;
     public Action<Vector3> onOpponentMove;
+    public Action<Vector2> onOpponentVelo;
+    public Action<bool, float> onUpdateRotation;
+    public Action<Vector3> onBallMove;
+    public Action<Vector3> onFireBall;
+    public Action<PlayerTag,bool> onReset;
+
     //public Action<Tile> onUpdateBoard;
     public Action<string> onUpdateTimer;
     public Action<int> onEndGame;
@@ -44,6 +50,8 @@ public class NetworkController : SocketIOComponent
         _delayFunctionHelper = gameObject.AddComponent<DelayFunctionHelper>();
         DontDestroyOnLoad(gameObject);
     }
+
+
 
     // Start enqueue to find another player
 
@@ -72,6 +80,11 @@ public class NetworkController : SocketIOComponent
         }
     }
 
+    public void HasWin()
+    {
+        Emit(GameSetting.hasWin);
+    }
+
     // Start is called before the first frame update
     public override void Start()
     {
@@ -85,21 +98,59 @@ public class NetworkController : SocketIOComponent
         On(GameSetting.register, (E) => Register(E));
         On(GameSetting.startGame, (E) => StartGame(E));
         On(GameSetting.updatePosition, (E) => UpdateOpponentPosition(E));
+        On(GameSetting.updateVelo, (E) => UpdateOpponentVelo(E));
+        On(GameSetting.fireBall, (E) => OnFireBall(E));
+        On(GameSetting.updateBallPosition, (E) => UpdateBallPosition(E));
+        On(GameSetting.updateArrowRotation, (E) => UpdateArrowRotation(E));
+        On(GameSetting.reset, (E) => OnReset(E));
         //On(GameSetting.updateScore, (E) => UpdateScore(E));
         On(GameSetting.updateTimer, (E) => UpdateTimer(E));
         On(GameSetting.endGame, (E) => EndGame(E));
         On(GameSetting.outOfMove, (E) => OnOutOfMove(E));
     }
 
+    private void OnReset(SocketIOEvent e)
+    {
+        int winner = (int)e.data["winner"].n;
+        PlayerTag winnerTag = PlayerTag.NONE;
+
+        if (winner == 2)
+            winnerTag = PlayerTag.PLAYER1;
+        else
+            winnerTag = PlayerTag.PLAYER2;
+
+        onReset?.Invoke(winnerTag, true);
+
+    }
+
+    private void UpdateArrowRotation(SocketIOEvent e)
+    {
+        onUpdateRotation(e.data["isLeft"].b, e.data["currentYRotation"].n);
+    }
+
+    private void UpdateBallPosition(SocketIOEvent e)
+    {
+        onBallMove?.Invoke(CreateVector3FromJson(e));
+    }
+
+    private void OnFireBall(SocketIOEvent e)
+    {
+        Debug.Log("Opponent Fire");
+        onFireBall?.Invoke(CreateVector3FromJson(e));
+    }
+
+    private void UpdateOpponentVelo(SocketIOEvent e)
+    {
+        Vector3 velo = new Vector3();
+        velo.x = e.data["x"].n;
+        velo.y = e.data["y"].n;
+
+        onOpponentVelo?.Invoke(velo);
+    }
+
     private void UpdateOpponentPosition(SocketIOEvent e)
     {
-        Debug.Log("On opponent move");
-        Vector3 pos = new Vector3();
-        pos.x = e.data["x"].n;
-        pos.y = e.data["y"].n;
-        pos.z = e.data["z"].n;
-
-        onOpponentMove?.Invoke(pos);
+        onOpponentMove?.Invoke(CreateVector3FromJson(e));
     }
 
     public void EndGame(SocketIOEvent e)
@@ -121,12 +172,9 @@ public class NetworkController : SocketIOComponent
 
         GlobalVariable.myIndex = opponentIndex;
 
-        Debug.Log("Opponent Index : " + opponentIndex);
-        Debug.Log("Start Game" + opponentName);
         _opponentName = opponentName;
 
         onStartGame(opponentName);
-        Debug.LogFormat("Found opponent {0} ", opponentName);
     }
     public void OnConnectSuccess()
     {
@@ -135,6 +183,7 @@ public class NetworkController : SocketIOComponent
     {
         Emit(GameSetting.registerName, new JSONObject(new Dictionary<string, string> { ["name"] = name }));// { name: "duykk"});
     }
+
     public void Register(SocketIOEvent e)
     {
         string id = e.data["id"].ToString();
@@ -142,6 +191,7 @@ public class NetworkController : SocketIOComponent
         OnConnectSuccess();
         Debug.LogFormat("id {0}", _id);
     }
+
     //public void UpdateScore(SocketIOEvent e)
     //{
     //    string score = GameUtilities.GameUtilities.RemoveQuote(e.data["score"].ToString());
@@ -153,13 +203,36 @@ public class NetworkController : SocketIOComponent
     //    base.Update();
     //}
 
+    public void SendUpdateArrowRotate(bool isLeft, float currentYRotation)
+    {
+        JSONObject jSONObject = new JSONObject(JSONObject.Type.OBJECT);
+        jSONObject.AddField("isLeft", isLeft);
+        jSONObject.AddField("currentYRotation", currentYRotation);
+
+        Emit(GameSetting.updateArrowRotation, jSONObject);
+    }
+
+    public void SendBallPosition(Vector3 position)
+    {
+        Emit(GameSetting.updateBallPosition, CreateJsonFromVector3(position));
+    }
+
+    public void SendFireBall(Vector3 force)
+    {
+        Emit(GameSetting.fireBall, CreateJsonFromVector3(force));
+    }
+
+    public void SendUpdateVelocity(Vector2 velo)
+    {
+        JSONObject veloJSon = new JSONObject(JSONObject.Type.OBJECT);
+        veloJSon.AddField("x", velo.x);
+        veloJSon.AddField("y", velo.y);
+        Emit(GameSetting.updateVelo, veloJSon);
+    }
+
     public void SendUpdatePosition(Vector3 pos)
     {
-        JSONObject position = new JSONObject(JSONObject.Type.OBJECT);
-        position.AddField("x", pos.x);
-        position.AddField("y", pos.y);
-        position.AddField("z", pos.z);
-        Emit(GameSetting.updatePosition, position);
+        Emit(GameSetting.updatePosition, CreateJsonFromVector3(pos));
     }
 
     public void SendUpdateScore(string v)
@@ -187,6 +260,26 @@ public class NetworkController : SocketIOComponent
         string newText = text;
         newText = newText.Replace("\"", "");
         return newText;
+    }
+
+    private JSONObject CreateJsonFromVector3(Vector3 vector3)
+    {
+        JSONObject jSONObject = new JSONObject(JSONObject.Type.OBJECT);
+        jSONObject.AddField("x", vector3.x);
+        jSONObject.AddField("y", vector3.y);
+        jSONObject.AddField("z", vector3.z);
+
+        return jSONObject;
+    }
+
+    private Vector3 CreateVector3FromJson(SocketIOEvent e)
+    {
+        Vector3 pos = new Vector3();
+        pos.x = e.data["x"].n;
+        pos.y = e.data["y"].n;
+        pos.z = e.data["z"].n;
+
+        return pos;
     }
 
 }

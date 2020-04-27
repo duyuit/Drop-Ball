@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class GameSetting
 {
-    public static int readyTime = 5;
+    public static int readyTime = 1;
 
     // Network command
     public static string register = "register";
@@ -20,4 +20,11 @@ public class GameSetting
     public static string exitRoom = "exitRoom";
     public static string outOfMove = "outOfMove";
     public static string updatePosition = "updatePosition";
+    public static string updateVelo = "updateVelo";
+    public static string fireBall = "fireBall";
+    public static string updateBallPosition = "updateBallPosition";
+    public static string updateArrowRotation = "updateArrowRotation";
+    public static string hasWin = "hasWin";
+    public static string reset = "reset";
+
 }

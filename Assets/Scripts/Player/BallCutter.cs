@@ -17,8 +17,8 @@ public class BallCutter : MonoBehaviour
 
     public void Cut()
     {
-        clipper.Cut();
-        clipper1.Cut();
+        //clipper.Cut();
+        //clipper1.Cut();
         hasCut = true;
     }
 

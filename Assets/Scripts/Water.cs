@@ -16,18 +16,32 @@ public class Water : MonoBehaviour
         {
             case 8: // Ball
                 Debug.Log("Drop ball");
-                GameController.Instance.DropBall();
+                if (GlobalVariable.isOnline)
+                    GameOnlineController.Instance.DropBall();
+                else
+                    GameController.Instance.DropBall();
+
                 //diePS = Instantiate(playerDiePrefab);
                 //GameController.Instance.Lose();
 
                 break;
             case 9: // Player 
                 if (other.GetComponentInChildren<BallCatcher>().HasBall())
-                    GameController.Instance.DropBall();
+                {
+                    if (GlobalVariable.isOnline)
+                        GameOnlineController.Instance.DropBall();
+                    else
+                        GameController.Instance.DropBall();
+                }
                 break;
             case 10: // Bot
                 if (other.GetComponentInChildren<BallCatcher>().HasBall())
-                    GameController.Instance.DropBall();
+                {
+                    if (GlobalVariable.isOnline)
+                        GameOnlineController.Instance.DropBall();
+                    else
+                        GameController.Instance.DropBall();
+                }
                 return;
 
         }
